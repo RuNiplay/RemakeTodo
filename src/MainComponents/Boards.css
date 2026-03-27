@@ -1,0 +1,106 @@
+.boards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.board-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 16px;
+}
+
+.board-item:hover {
+    background: #e8e8e8;
+}
+
+.board-item.selected {
+    background: #b197fc;
+    color: white;
+}
+
+.board-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 20px;
+}
+
+.board-name {
+    flex: 1;
+    color: #333;
+    font-size: 16px;
+}
+
+.board-item.selected .board-name {
+    color: white;
+}
+
+.create-board-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.create-board-form input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.create-board-form input:focus {
+    outline: none;
+    border-color: #b197fc;
+}
+
+.create-board-form .add-btn {
+    padding: 8px 16px;
+    background: #b197fc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+}
+
+.create-board-form .add-btn:hover {
+    background: #9f7aea;
+}
+
+.empty-boards {
+    color: #999;
+    padding: 20px;
+    text-align: center;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+}
+
+/* Сброс стилей */
+.boards-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.board-item {
+    list-style-type: none;
+}
