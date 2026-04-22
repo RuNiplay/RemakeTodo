@@ -129,21 +129,21 @@ export const tasksApi = {
         return json.data || json;
     },
 
-    update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string): Promise<TaskDTO> => {
-        const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-            method: 'PATCH',
-            headers: getHeaders(token),
-            body: JSON.stringify(data),
-        });
+update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string): Promise<TaskDTO> => {
+    const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: getHeaders(token),
+        body: JSON.stringify(data), 
+    });
 
-        if (!res.ok) {
-            const text = await res.text();
-            throw new Error(text || 'Ошибка обновления задачи');
-        }
+    if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Ошибка обновления задачи');
+    }
 
-        const json = await res.json();
-        return json.data || json;
-    },
+    const json = await res.json();
+    return json.data || json;
+},
 
     delete: async (taskId: number, token: string): Promise<void> => {
         const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {

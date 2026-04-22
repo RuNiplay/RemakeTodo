@@ -193,9 +193,11 @@ export interface TasksProps {
     ) => void;
     onUpdateTask: (
         taskId: number,
+        name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard'
     ) => void;
+    onDeleteTask: (taskId: number) => void;
 }
 
 export interface ApiError {

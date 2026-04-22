@@ -121,20 +121,36 @@ function Brain() {
         }
     };
 
-    // ========== ДОБАВЛЕНА ФУНКЦИЯ ОБНОВЛЕНИЯ ЗАДАЧИ ==========
     const handleUpdateTask = async (
         taskId: number,
+        name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard'
     ) => {
+        console.log('handleUpdateTask вызвана', { taskId, name, status, priority });
         try {
-            await tasksApi.update(taskId, { status, priority }, token);
+            const result = await tasksApi.update(taskId, { name, status, priority }, token);
+            console.log('Результат update:', result);
             if (selectedBoardId) {
                 const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
                 setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: updatedTasks }));
             }
         } catch (err) {
             console.error('Ошибка обновления задачи:', err);
+        }
+    };
+
+    // Новая функция удаления задачи
+    const handleDeleteTask = async (taskId: number) => {
+        console.log('🗑️ Удаление задачи:', taskId);
+        try {
+            await tasksApi.delete(taskId, token);
+            if (selectedBoardId) {
+                const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
+                setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: updatedTasks }));
+            }
+        } catch (err) {
+            console.error('Ошибка удаления задачи:', err);
         }
     };
 
@@ -173,6 +189,7 @@ function Brain() {
                             boardId={selectedBoardId}
                             onCreateTask={handleCreateTask}
                             onUpdateTask={handleUpdateTask}
+                            onDeleteTask={handleDeleteTask}
                         />
                     </div>
                 ) : (
