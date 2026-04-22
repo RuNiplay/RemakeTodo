@@ -37,8 +37,6 @@ function Folders({
         }
     };
 
-    console.log('Folders рендер, boardsByFolder:', boardsByFolder);
-
     return (
         <div className="folders-section">
             <div className="folders-header">
@@ -77,26 +75,21 @@ function Folders({
                         {expandedFolderId === folder.id && (
                             <div className="boards-inside-folder">
                                 {loadingBoards[folder.id] ? (
-                                    <div className="loading-boards">Загрузка досок...</div>
+                                    <div className="loading-boards">Загрузка...</div>
                                 ) : (
-                                    <>
-                                        <Boards 
-    boards={boardsByFolder[folder.id] || []}
-    selectedBoardId={selectedBoardId}
-    onBoardClick={(boardId) => {
-        // Находим название доски
-        const board = (boardsByFolder[folder.id] || []).find(b => b.id === boardId);
-        if (board) {
-            onBoardClick(boardId, board.name);
-        }
-    }}
-    onCreateBoard={(name) => {
-        if (name?.trim()) {
-            onCreateBoard(folder.id, name);
-        }
-    }}
-/>
-                                    </>
+                                    <Boards 
+                                        boards={boardsByFolder[folder.id] || []}
+                                        selectedBoardId={selectedBoardId}
+                                        onBoardClick={(boardId) => {
+    const board = (boardsByFolder[folder.id] || []).find(b => b.id === boardId);
+    if (board) {
+        onBoardClick(boardId, board.name, folder.name);
+    }
+}}
+                                        onCreateBoard={(name) => {
+                                            if (name?.trim()) onCreateBoard(folder.id, name);
+                                        }}
+                                    />
                                 )}
                             </div>
                         )}
@@ -104,9 +97,7 @@ function Folders({
                 ))}
                 
                 {folders.length === 0 && (
-                    <p className="empty-message">
-                        У вас пока нет папок. Создайте первую!
-                    </p>
+                    <p className="empty-message">У вас пока нет папок. Создайте первую!</p>
                 )}
             </div>
         </div>

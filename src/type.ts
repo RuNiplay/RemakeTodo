@@ -117,6 +117,7 @@ export interface CreateTaskRequest {
     name: string;
     priority: 'easy' | 'medium' | 'hard';
     status: 'backlog' | 'in_progress' | 'review' | 'done';
+    board_id: number;
 }
 
 export interface UpdateTaskRequest {
@@ -169,7 +170,7 @@ export interface FolderListProps {
     loadingBoards: Record<number, boolean>;
     onFolderClick: (folderId: number) => void;
     onCreateBoard: (folderId: number, name: string) => void;
-    onBoardClick: (boardId: number, boardName: string) => void;
+    onBoardClick: (boardId: number, boardName: string, folderName: string) => void;
     selectedBoardId: number | null;
 }
 
@@ -184,7 +185,17 @@ export interface TasksProps {
     tasks: TaskDTO[];
     loading?: boolean;
     boardId: number;
-    onCreateTask: (boardId: number, name: string) => void;
+    onCreateTask: (
+        boardId: number,
+        name: string,
+        status: 'backlog' | 'in_progress' | 'review' | 'done',
+        priority: 'easy' | 'medium' | 'hard'
+    ) => void;
+    onUpdateTask: (
+        taskId: number,
+        status: 'backlog' | 'in_progress' | 'review' | 'done',
+        priority: 'easy' | 'medium' | 'hard'
+    ) => void;
 }
 
 export interface ApiError {

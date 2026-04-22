@@ -1,5 +1,6 @@
 import './Boards.css';
 import type { BoardsProps } from '../type';
+import { useState } from 'react';
 
 function Boards({ 
     boards, 
@@ -7,11 +8,14 @@ function Boards({
     onBoardClick,
     onCreateBoard 
 }: BoardsProps) {
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-            onCreateBoard?.(e.currentTarget.value);
-            e.currentTarget.value = '';
-        }
+    const [showInput, setShowInput] = useState(false);
+    const [newName, setNewName] = useState('');
+
+    const handleCreate = () => {
+        if (!newName.trim()) return;
+        onCreateBoard?.(newName);
+        setNewName('');
+        setShowInput(false);
     };
 
     return (
@@ -28,24 +32,26 @@ function Boards({
             ))}
             
             {onCreateBoard && (
-                <div className="create-board-form">
-                    <input
-                        type="text"
-                        placeholder="Новая доска..."
-                        onKeyPress={handleKeyPress}
-                    />
+                <div className="boards-footer">
                     <button 
-                        className="add-btn"
-                        onClick={(e) => {
-                            const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                            if (input?.value.trim()) {
-                                onCreateBoard(input.value);
-                                input.value = '';
-                            }
-                        }}
+                        className="boards-add-btn"
+                        onClick={() => setShowInput(true)}
                     >
                         +
                     </button>
+                    {showInput && (
+                        <div className="boards-input-group">
+                            <input
+                                value={newName}
+                                onChange={(e) => setNewName(e.target.value)}
+                                placeholder="Название доски"
+                                autoFocus
+                                onKeyPress={(e) => e.key === 'Enter' && handleCreate()}
+                            />
+                            <button onClick={handleCreate}>Создать</button>
+                            <button onClick={() => setShowInput(false)}>Отмена</button>
+                        </div>
+                    )}
                 </div>
             )}
             

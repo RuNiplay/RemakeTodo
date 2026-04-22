@@ -75,7 +75,7 @@ const Registrachia = () => {
                         <div style={{ 
                             padding: '10px', 
                             marginBottom: '15px',
-                            background: message.includes('✅') ? '#e6ffe6' : '#ffe6e6',
+                            background: message.includes('') ? '#e6ffe6' : '#ffe6e6',
                             borderRadius: '8px'
                         }}>
                             {message}

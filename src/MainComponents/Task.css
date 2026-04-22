@@ -1,37 +1,119 @@
-.create-task-form {
+.tasks-container {
+    width: 100%;
+}
+
+.tasks-header {
     display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+    justify-content: flex-end;
+    margin-bottom: 20px;
 }
 
-.create-task-form input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.create-task-form input:focus {
-    outline: none;
-    border-color: #b197fc;
-}
-
-.create-task-form .add-btn {
-    padding: 8px 16px;
+.tasks-add-btn {
+    width: 36px;
+    height: 36px;
     background: #b197fc;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
+    font-size: 24px;
     cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
 }
 
-.create-task-form .add-btn:hover {
+.tasks-add-btn:hover {
     background: #9f7aea;
+}
+
+.tasks-input-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 16px;
+}
+
+.tasks-input-group input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+}
+
+.tasks-input-group button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.tasks-input-group button:first-of-type {
+    background: #b197fc;
+    color: white;
+}
+
+.tasks-input-group button:last-of-type {
+    background: transparent;
+    color: #666;
+}
+
+/* КАРТОЧКИ ЗАДАЧ */
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 8px;
+}
+
+/* ЯВНАЯ КАРТОЧКА */
+.task-item {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 20px 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9edf2;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.task-item:hover {
+    background: #fefefe;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    border-color: #cdd7e3;
+}
+
+.task-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 12px;
+}
+
+.task-meta {
+    display: flex;
+    gap: 12px;
+}
+
+.task-status,
+.task-priority {
+    background: #f2f4f8;
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 12px;
+    color: #2c3e50;
+}
+
+.tasks-empty {
+    text-align: center;
+    color: #8b9eb0;
+    padding: 40px 20px;
+    background: #fafcff;
+    border-radius: 24px;
+    font-size: 14px;
+    border: 1px solid #eef2f9;
+}
+
+.tasks-loading {
+    text-align: center;
+    color: #666;
+    padding: 32px;
 }

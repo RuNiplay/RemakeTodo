@@ -13,7 +13,6 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background 0.2s;
-    font-size: 16px;
 }
 
 .board-item:hover {
@@ -26,81 +25,89 @@
 }
 
 .board-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
     font-size: 20px;
 }
 
 .board-name {
     flex: 1;
-    color: #333;
     font-size: 16px;
+    word-break: break-word;
 }
 
-.board-item.selected .board-name {
-    color: white;
-}
-
-.create-board-form {
-    display: flex;
-    gap: 8px;
+.boards-footer {
     margin-top: 12px;
-    padding: 12px;
-    background: #f8f9fa;
-    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
 }
 
-.create-board-form input {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.create-board-form input:focus {
-    outline: none;
-    border-color: #b197fc;
-}
-
-.create-board-form .add-btn {
-    padding: 8px 16px;
+.boards-add-btn {
+    width: 32px;
+    height: 32px;
     background: #b197fc;
     color: white;
     border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
+    border-radius: 8px;
+    font-size: 20px;
     font-weight: bold;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 36px;
+    flex-shrink: 0;
 }
 
-.create-board-form .add-btn:hover {
+.boards-add-btn:hover {
     background: #9f7aea;
+}
+
+.boards-input-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 280px;
+    box-sizing: border-box;
+}
+
+.boards-input-group input {
+    flex: 1;
+    min-width: 120px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.boards-input-group button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.boards-input-group button:first-of-type {
+    background: #b197fc;
+    color: white;
+}
+
+.boards-input-group button:last-of-type {
+    background: transparent;
+    color: #666;
+}
+
+.boards-input-group button:last-of-type:hover {
+    background: #f0f0f0;
 }
 
 .empty-boards {
     color: #999;
     padding: 20px;
     text-align: center;
-    border: 2px dashed #ddd;
-    border-radius: 12px;
-    font-size: 16px;
-}
-
-/* Сброс стилей */
-.boards-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.board-item {
-    list-style-type: none;
 }

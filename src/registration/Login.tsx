@@ -36,7 +36,7 @@ const Login = () => {
                 
                 if (token) {
                     localStorage.setItem('token', token);
-                    setMessage("✅ Вход выполнен!");
+                    setMessage("Вход выполнен!");
                     setTimeout(() => {
                         window.location.href = "/boards";
                     }, 1000);
@@ -64,7 +64,7 @@ const Login = () => {
                         <div style={{ 
                             padding: '10px', 
                             marginBottom: '15px',
-                            background: message.includes('✅') ? '#e6ffe6' : '#ffe6e6',
+                            background: message.includes('') ? '#e6ffe6' : '#ffe6e6',
                             borderRadius: '8px'
                         }}>
                             {message}

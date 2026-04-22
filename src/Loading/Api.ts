@@ -131,7 +131,7 @@ export const tasksApi = {
 
     update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string): Promise<TaskDTO> => {
         const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: getHeaders(token),
             body: JSON.stringify(data),
         });
