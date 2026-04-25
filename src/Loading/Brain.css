@@ -1,34 +1,31 @@
-/* Общий контейнер страницы */
 .brain-container {
-    width: 100vw;
     display: flex;
     height: 100vh;
     background: #f8f0f5;
-    padding: 0;
-    gap: 0;
-    margin: 0;
+    padding: 24px;
+    gap: 48px;
+    overflow: hidden;
 }
 
-/* Левая колонка — белый прямоугольник */
 .brain-sidebar {
     width: 280px;
+    flex-shrink: 0;
     background: white;
     border-radius: 24px;
     padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     overflow-y: auto;
-    margin: 24px 0 24px 24px;
+    height: 100%;
 }
 
-/* Правая колонка — занимает всё оставшееся место */
 .brain-main {
     flex: 1;
     display: flex;
     align-items: flex-start;
-    overflow-y: auto;
-    margin: 24px 24px 24px 0;
+    overflow-y: hidden;
+    height: 100%;
 }
 
-/* Белая карточка для контента */
 .brain-card,
 .brain-empty {
     background: white;
@@ -36,32 +33,33 @@
     padding: 24px;
     width: 100%;
     max-width: none;
-    margin-right: 15px;
-    margin-left: 200px;
-    height: 91vh;
+    margin: 0;
+    height: 100%;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
-/* Навигационная цепочка (хлебные крошки) */
 .brain-breadcrumb {
     margin-bottom: 16px;
     font-size: 14px;
     color: #666;
+    flex-shrink: 0;
 }
 
 .breadcrumb-text {
     color: #999;
 }
 
-/* Хедер карточки с точкой и названием */
 .brain-card-header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 24px;
+    flex-shrink: 0;
 }
 
-/* Зелёная точка */
 .board-indicator {
     width: 10px;
     height: 10px;
@@ -71,7 +69,6 @@
     flex-shrink: 0;
 }
 
-/* Заголовок доски */
 .brain-card-title {
     font-size: 24px;
     font-weight: 600;
@@ -79,7 +76,6 @@
     color: #333;
 }
 
-/* Пустое состояние */
 .brain-empty {
     text-align: center;
     color: #999;
