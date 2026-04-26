@@ -27,6 +27,11 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
         { key: 'done', title: 'Готово' },
     ];
 
+    const handleCreateTaskForColumn = (status: string) => {
+        setNewTaskStatus(status as any);
+        setShowInput(true);
+    };
+
     const handleCreateTask = () => {
         if (!newTaskName.trim()) return;
         onCreateTask(boardId, newTaskName, newTaskStatus, newTaskPriority);
@@ -52,10 +57,6 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
 
     return (
         <div className="tasks-container">
-            <div className="tasks-header">
-                <button className="tasks-add-btn" onClick={() => setShowInput(true)}>+</button>
-            </div>
-
             {showInput && (
                 <div className="tasks-input-group">
                     <input
@@ -85,14 +86,25 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                 {columnConfig.map((column) => (
                     <div key={column.key} className="tasks-column">
                         <div className="column-header">
-                            <span>{column.title}</span>
-                            <span>{groupedTasks[column.key as keyof typeof groupedTasks].length}</span>
+                            <div className="column-header-left">
+                                <span>{column.title}</span>
+                                <span className="column-count">{groupedTasks[column.key as keyof typeof groupedTasks].length}</span>
+                            </div>
+                            <button 
+                                className="column-add-btn"
+                                onClick={() => handleCreateTaskForColumn(column.key)}
+                            >
+                                +
+                            </button>
                         </div>
                         <div className="tasks-list">
+                            {groupedTasks[column.key as keyof typeof groupedTasks].length === 0 && (
+                                <div className="empty-column">Нет задач</div>
+                            )}
                             {groupedTasks[column.key as keyof typeof groupedTasks].map((task) => (
                                 <div
                                     key={`task-${task.id}`}
-                                    className="task-item"
+                                    className={`task-item priority-${task.priority}`}
                                     onClick={() => handleEditTask(task.id, task.name, task.status, task.priority)}
                                 >
                                     {editingTaskId === task.id ? (
@@ -142,29 +154,31 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="task-name">{task.name}</div>
-                                            <div className="task-meta">
-                                                <span className="task-status">{task.status}</span>
-                                                <span className="task-priority">{task.priority}</span>
+                                            <div className="task-header">
+                                                <span className="task-priority-badge">
+                                                    {task.priority === 'easy' && 'Низкий'}
+                                                    {task.priority === 'medium' && 'Средний'}
+                                                    {task.priority === 'hard' && 'Высокий'}
+                                                </span>
                                             </div>
-                                            <button
-                                                className="task-delete-btn"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    if (window.confirm('Удалить задачу?')) {
-                                                        onDeleteTask(task.id);
-                                                    }
-                                                }}
-                                            >
-                                                🗑
-                                            </button>
+                                            <div className="task-name">{task.name}</div>
+                                            <div className="task-footer">
+                                                <button
+                                                    className="task-delete-btn"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (window.confirm('Удалить задачу?')) {
+                                                            onDeleteTask(task.id);
+                                                        }
+                                                    }}
+                                                >
+                                                    🗑
+                                                </button>
+                                            </div>
                                         </>
                                     )}
                                 </div>
                             ))}
-                            {groupedTasks[column.key as keyof typeof groupedTasks].length === 0 && (
-                                <div className="empty-column">Нет задач</div>
-                            )}
                         </div>
                     </div>
                 ))}
