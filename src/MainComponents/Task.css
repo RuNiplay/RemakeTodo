@@ -1,26 +1,20 @@
 .tasks-container {
     width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .tasks-header {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .tasks-add-btn {
-    width: 36px;
-    height: 36px;
-    background: #b197fc;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.tasks-add-btn:hover {
-    background: #9f7aea;
+    display: none;
 }
 
 .tasks-input-group {
@@ -30,6 +24,7 @@
     padding: 12px;
     background: #f8f9fa;
     border-radius: 16px;
+    flex-shrink: 0;
 }
 
 .tasks-input-group input {
@@ -59,48 +54,103 @@
 .tasks-board {
     display: flex;
     gap: 20px;
+    flex: 1;
+    min-height: 0;
     overflow-x: auto;
-    padding-bottom: 8px;
 }
 
 .tasks-column {
     flex: 1;
     min-width: 250px;
+    max-height: 75vh;
     background: #f8f9fc;
     border-radius: 20px;
     padding: 16px;
     border: 1px solid #e9edf2;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
 }
 
 .column-header {
     font-size: 18px;
     font-weight: 600;
     margin-bottom: 16px;
-    padding-bottom: 8px;
-    border-bottom: 2px solid #b197fc;
+    padding: 12px 16px;
+    margin: -16px -16px 16px -16px;
+    background: #c4b5fd;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.column-header span:first-child {
-    color: #1a1a1a;
+.column-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.column-header span:last-child {
+.column-header-left span:first-child {
+    color: white;
+}
+
+.column-count {
     font-size: 14px;
-    background: #e9ecef;
-    padding: 2px 8px;
-    border-radius: 20px;
-    color: #666;
+    background: rgba(255, 255, 255, 0.25);
+    padding: 2px 10px;
+    border-radius: 30px;
+    color: white;
+}
+
+.column-add-btn {
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.column-add-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
 }
 
 .tasks-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 4px;
 }
 
+.tasks-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tasks-list::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 10px;
+}
+
+.tasks-list::-webkit-scrollbar-thumb {
+    background: #b197fc;
+    border-radius: 10px;
+}
+
+/* КАРТОЧКА ЗАДАЧИ */
 .task-item {
     background: #ffffff;
     border-radius: 16px;
@@ -109,6 +159,10 @@
     border: 1px solid #e9edf2;
     cursor: pointer;
     transition: all 0.2s ease;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .task-item:hover {
@@ -116,27 +170,76 @@
     border-color: #cdd7e3;
 }
 
+/* ВЕРХНЯЯ ЧАСТЬ КАРТОЧКИ: ПРИОРИТЕТ + КНОПКА УДАЛЕНИЯ */
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ПРИОРИТЕТ — ЦВЕТНАЯ РАМОЧКА */
+.task-priority-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Низкий приоритет (easy) — зелёный */
+.task-item.priority-easy .task-priority-badge {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+}
+
+/* Средний приоритет (medium) — оранжевый */
+.task-item.priority-medium .task-priority-badge {
+    background: #fff8e1;
+    color: #ed6c02;
+    border: 1px solid #ff9800;
+}
+
+/* Высокий приоритет (hard) — красный */
+.task-item.priority-hard .task-priority-badge {
+    background: #ffebee;
+    color: #d32f2f;
+    border: 1px solid #f44336;
+}
+
+/* НАЗВАНИЕ ЗАДАЧИ */
 .task-name {
     font-size: 15px;
     font-weight: 600;
     color: #111;
-    margin-bottom: 10px;
     word-break: break-word;
+    line-height: 1.4;
 }
 
-.task-meta {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+/* КНОПКА УДАЛЕНИЯ */
+.task-delete-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    color: #999;
+    transition: color 0.2s;
+    border-radius: 8px;
 }
 
+.task-delete-btn:hover {
+    color: #f44336;
+    background: rgba(244, 67, 54, 0.1);
+}
+
+/* СТАРЫЕ СТИЛИ (для совместимости, скрыты) */
 .task-status,
-.task-priority {
-    background: #f2f4f8;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    color: #2c3e50;
+.task-priority,
+.task-meta {
+    display: none;
 }
 
 .empty-column {
@@ -181,18 +284,4 @@
     text-align: center;
     color: #666;
     padding: 32px;
-}
-.task-delete-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 4px;
-    margin-top: 8px;
-    color: #999;
-    transition: color 0.2s;
-}
-
-.task-delete-btn:hover {
-    color: #f44336;
 }
