@@ -36,6 +36,7 @@ const Login = () => {
                 
                 if (token) {
                     localStorage.setItem('token', token);
+                     localStorage.setItem('username', form.username);
                     setMessage("Вход выполнен!");
                     setTimeout(() => {
                         window.location.href = "/boards";

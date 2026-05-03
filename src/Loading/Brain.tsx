@@ -23,6 +23,7 @@ function Brain() {
     const [error, setError] = useState('');
     
     const token = localStorage.getItem('token') || '';
+    const username = localStorage.getItem('username') || 'Не указан';
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -222,51 +223,71 @@ function Brain() {
                         )}
 
                         {activeTab === 'overview' && (
-                            <div className="board-overview">
-                                <div className="status-card">
-                                    <span className="status-card-title">Бэклог</span>
-                                    <span className="status-card-count">{getTasksCountByStatus('backlog')} задач</span>
-                                    <div className="status-card-divider"></div>
-                                    <div className="status-card-priorities">
-                                        <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('backlog', 'easy')}</span>
-                                        <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('backlog', 'medium')}</span>
-                                        <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('backlog', 'hard')}</span>
+                            <>
+                                <div className="board-overview">
+                                    <div className="status-card">
+                                        <span className="status-card-title">Бэклог</span>
+                                        <span className="status-card-count">{getTasksCountByStatus('backlog')} задач</span>
+                                        <div className="status-card-divider"></div>
+                                        <div className="status-card-priorities">
+                                            <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('backlog', 'easy')}</span>
+                                            <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('backlog', 'medium')}</span>
+                                            <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('backlog', 'hard')}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="status-card">
+                                        <span className="status-card-title">В работе</span>
+                                        <span className="status-card-count">{getTasksCountByStatus('in_progress')} задач</span>
+                                        <div className="status-card-divider"></div>
+                                        <div className="status-card-priorities">
+                                            <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('in_progress', 'easy')}</span>
+                                            <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('in_progress', 'medium')}</span>
+                                            <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('in_progress', 'hard')}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="status-card">
+                                        <span className="status-card-title">На проверке</span>
+                                        <span className="status-card-count">{getTasksCountByStatus('review')} задач</span>
+                                        <div className="status-card-divider"></div>
+                                        <div className="status-card-priorities">
+                                            <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('review', 'easy')}</span>
+                                            <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('review', 'medium')}</span>
+                                            <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('review', 'hard')}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="status-card">
+                                        <span className="status-card-title">Готово</span>
+                                        <span className="status-card-count">{getTasksCountByStatus('done')} задач</span>
+                                        <div className="status-card-divider"></div>
+                                        <div className="status-card-priorities">
+                                            <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('done', 'easy')}</span>
+                                            <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('done', 'medium')}</span>
+                                            <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('done', 'hard')}</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="status-card">
-                                    <span className="status-card-title">В работе</span>
-                                    <span className="status-card-count">{getTasksCountByStatus('in_progress')} задач</span>
-                                    <div className="status-card-divider"></div>
-                                    <div className="status-card-priorities">
-                                        <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('in_progress', 'easy')}</span>
-                                        <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('in_progress', 'medium')}</span>
-                                        <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('in_progress', 'hard')}</span>
+                                <div className="board-info-card">
+                                    <div className="board-info-header">
+                                        <h3>Информация о доске</h3>
+                                    </div>
+                                    <div className="board-info-row">
+                                        <span className="board-info-label">Владелец:</span>
+                                        <span className="board-info-value">{username}</span>
+                                    </div>
+                                    <div className="board-info-row">
+                                        <span className="board-info-label">Создано:</span>
+                                        <span className="board-info-value">—</span>
+                                    </div>
+                                    <div className="board-info-row">
+                                        <span className="board-info-label">Срок:</span>
+                                        <span className="board-info-value">—</span>
                                     </div>
                                 </div>
-
-                                <div className="status-card">
-                                    <span className="status-card-title">На проверке</span>
-                                    <span className="status-card-count">{getTasksCountByStatus('review')} задач</span>
-                                    <div className="status-card-divider"></div>
-                                    <div className="status-card-priorities">
-                                        <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('review', 'easy')}</span>
-                                        <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('review', 'medium')}</span>
-                                        <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('review', 'hard')}</span>
-                                    </div>
-                                </div>
-
-                                <div className="status-card">
-                                    <span className="status-card-title">Готово</span>
-                                    <span className="status-card-count">{getTasksCountByStatus('done')} задач</span>
-                                    <div className="status-card-divider"></div>
-                                    <div className="status-card-priorities">
-                                        <span className="priority-badge low">Низ: {getTasksCountByStatusAndPriority('done', 'easy')}</span>
-                                        <span className="priority-badge medium">Сред: {getTasksCountByStatusAndPriority('done', 'medium')}</span>
-                                        <span className="priority-badge high">Выс: {getTasksCountByStatusAndPriority('done', 'hard')}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            </>
                         )}
                     </div>
                 ) : (

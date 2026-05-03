@@ -116,7 +116,6 @@
     color: white;
 }
 
-/* ===== 4 КАРТОЧКИ В ОДНУ СТРОКУ ===== */
 .board-overview {
     display: flex;
     flex-direction: row;
@@ -203,4 +202,46 @@
     display: inline-block;
     line-height: 1;
     margin-top: -1px;
+}
+
+.board-info-card {
+    background: #ede4fc;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 24px;
+    margin-bottom: 0;
+    border: 1px solid #e9edf2;
+    width: 33%;
+    align-self: flex-start; 
+}
+
+.board-info-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+    color: #333;
+}
+
+.board-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9edf2;
+}
+
+.board-info-row:last-child {
+    border-bottom: none;
+}
+
+.board-info-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+.board-info-value {
+    font-size: 13px;
+    color: #333;
+    font-weight: 500;
 }
