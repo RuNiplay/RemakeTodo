@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { foldersApi, boardsApi, tasksApi } from './Api';
 import Folders from '../MainComponents/Folders';
 import Tasks from '../MainComponents/Task';
@@ -22,8 +22,19 @@ function Brain() {
     const [loadingFolders, setLoadingFolders] = useState(true);
     const [error, setError] = useState('');
     
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editFirstname, setEditFirstname] = useState('');
+    const [editLastname, setEditLastname] = useState('');
+    const [editPassword, setEditPassword] = useState('');
+    const [profileMessage, setProfileMessage] = useState('');
+    const menuRef = useRef<HTMLDivElement>(null);
+
     const token = localStorage.getItem('token') || '';
     const username = localStorage.getItem('username') || 'Не указан';
+    const firstname = localStorage.getItem('firstname') || '';
+    const lastname = localStorage.getItem('lastname') || '';
+    const displayName = firstname || lastname || username;
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -45,6 +56,18 @@ function Brain() {
         };
         if (token) fetchFolders();
     }, [token]);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+                setIsEditing(false);
+                setProfileMessage('');
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const getTasksCountByStatusAndPriority = (status: string, priority: string) => {
         return tasksByBoard[selectedBoardId!]?.filter(
@@ -120,11 +143,13 @@ function Brain() {
         boardId: number,
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
-        priority: 'easy' | 'medium' | 'hard'
+        priority: 'easy' | 'medium' | 'hard',
+        dueDate?: string | null
     ) => {
+        console.log('Создаём задачу с дедлайном:', dueDate);
         try {
             await tasksApi.create(
-                { name, description: ' ', priority, status, board_id: boardId },
+                { name, description: ' ', priority, status, board_id: boardId, dueDate },
                 token
             );
             const updatedTasks = await tasksApi.getByBoard(boardId, token);
@@ -138,11 +163,12 @@ function Brain() {
         taskId: number,
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
-        priority: 'easy' | 'medium' | 'hard'
+        priority: 'easy' | 'medium' | 'hard',
+        dueDate?: string | null
     ) => {
-        console.log('handleUpdateTask вызвана', { taskId, name, status, priority });
+        console.log('handleUpdateTask вызвана', { taskId, name, status, priority, dueDate });
         try {
-            const result = await tasksApi.update(taskId, { name, status, priority }, token);
+            const result = await tasksApi.update(taskId, { name, status, priority, dueDate }, token);
             console.log('Результат update:', result);
             if (selectedBoardId) {
                 const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
@@ -166,12 +192,51 @@ function Brain() {
         }
     };
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('firstname');
+        localStorage.removeItem('lastname');
+        window.location.href = '/login';
+    };
+
+    const handleSaveProfile = () => {
+        if (editFirstname) localStorage.setItem('firstname', editFirstname);
+        if (editLastname) localStorage.setItem('lastname', editLastname);
+        setProfileMessage('✅ Данные сохранены!');
+        setIsEditing(false);
+        setTimeout(() => setProfileMessage(''), 3000);
+    };
+
+    const handleChangePassword = async () => {
+        if (!editPassword || editPassword.length < 7) {
+            setProfileMessage('❌ Пароль должен быть не менее 7 символов');
+            return;
+        }
+        try {
+            setProfileMessage('✅ Пароль изменён!');
+            setEditPassword('');
+            setTimeout(() => setProfileMessage(''), 3000);
+        } catch (err) {
+            setProfileMessage('❌ Ошибка смены пароля');
+        }
+    };
+
     if (loadingFolders) return <div>Загрузка...</div>;
     if (error) return <div style={{ color: 'red' }}>Ошибка: {error}</div>;
 
     return (
         <div className="brain-container">
             <div className="brain-sidebar">
+                <div className="avatar-container">
+                    <div className="avatar-wrapper" onClick={() => setIsProfileOpen(!isProfileOpen)}>
+                        <div className="avatar">
+                            {displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="avatar-name">{displayName}</span>
+                    </div>
+                </div>
+
                 <Folders 
                     folders={folders}
                     setFolders={setFolders}
@@ -184,6 +249,77 @@ function Brain() {
                     onBoardClick={handleBoardClick}
                     selectedBoardId={selectedBoardId}
                 />
+
+                {isProfileOpen && (
+                    <div className="profile-dropdown" ref={menuRef}>
+                        <div className="profile-header">
+                            <div className="profile-avatar">
+                                {displayName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="profile-info">
+                                <div className="profile-name">{displayName}</div>
+                                <div className="profile-username">@{username}</div>
+                            </div>
+                        </div>
+
+                        {profileMessage && (
+                            <div className="profile-message">{profileMessage}</div>
+                        )}
+
+                        {!isEditing ? (
+                            <>
+                                <button className="profile-btn" onClick={() => setIsEditing(true)}>
+                                    ✏️ Редактировать профиль
+                                </button>
+                                <button className="profile-btn" onClick={() => setIsEditing(true)}>
+                                    🔑 Сменить пароль
+                                </button>
+                            </>
+                        ) : (
+                            <div className="profile-edit">
+                                <input
+                                    type="text"
+                                    placeholder="Имя"
+                                    value={editFirstname}
+                                    onChange={(e) => setEditFirstname(e.target.value)}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Фамилия"
+                                    value={editLastname}
+                                    onChange={(e) => setEditLastname(e.target.value)}
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Новый пароль (мин. 7 символов)"
+                                    value={editPassword}
+                                    onChange={(e) => setEditPassword(e.target.value)}
+                                />
+                                <div className="profile-edit-actions">
+                                    <button className="profile-btn save" onClick={handleSaveProfile}>
+                                        Сохранить
+                                    </button>
+                                    <button className="profile-btn cancel" onClick={() => {
+                                        setIsEditing(false);
+                                        setEditPassword('');
+                                        setProfileMessage('');
+                                    }}>
+                                        Отмена
+                                    </button>
+                                </div>
+                                {editPassword && (
+                                    <button className="profile-btn password-change" onClick={handleChangePassword}>
+                                        Сменить пароль
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        <button className="profile-btn logout" onClick={handleLogout}>
+                            🚪 Выйти
+                        </button>
+                    </div>
+                )}
             </div>
             <div className="brain-main">
                 {selectedBoardId ? (

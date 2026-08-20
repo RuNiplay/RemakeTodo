@@ -7,11 +7,13 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
     const [newTaskName, setNewTaskName] = useState('');
     const [newTaskStatus, setNewTaskStatus] = useState<'backlog' | 'in_progress' | 'review' | 'done'>('backlog');
     const [newTaskPriority, setNewTaskPriority] = useState<'easy' | 'medium' | 'hard'>('medium');
+    const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
 
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [editName, setEditName] = useState<string>('');
     const [editStatus, setEditStatus] = useState<'backlog' | 'in_progress' | 'review' | 'done'>('backlog');
     const [editPriority, setEditPriority] = useState<'easy' | 'medium' | 'hard'>('medium');
+    const [editDueDate, setEditDueDate] = useState<string>('');
 
     const groupedTasks = {
         backlog: tasks.filter(t => t.status === 'backlog'),
@@ -27,6 +29,22 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
         { key: 'done', title: 'Готово' },
     ];
 
+    const isUrgent = (dueDate: string): boolean => {
+        if (!dueDate) return false;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const due = new Date(dueDate);
+        due.setHours(0, 0, 0, 0);
+        const diffDays = Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        return diffDays >= 0 && diffDays <= 7;
+    };
+
+    const formatDate = (dateString: string): string => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    };
+
     const handleCreateTaskForColumn = (status: string) => {
         setNewTaskStatus(status as any);
         setShowInput(true);
@@ -34,22 +52,24 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
 
     const handleCreateTask = () => {
         if (!newTaskName.trim()) return;
-        onCreateTask(boardId, newTaskName, newTaskStatus, newTaskPriority);
+        onCreateTask(boardId, newTaskName, newTaskStatus, newTaskPriority, newTaskDueDate || null);
         setNewTaskName('');
         setNewTaskStatus('backlog');
         setNewTaskPriority('medium');
+        setNewTaskDueDate('');
         setShowInput(false);
     };
 
-    const handleEditTask = (taskId: number, currentName: string, currentStatus: string, currentPriority: string) => {
+    const handleEditTask = (taskId: number, currentName: string, currentStatus: string, currentPriority: string, currentDueDate?: string | null) => {
         setEditingTaskId(taskId);
         setEditName(currentName);
         setEditStatus(currentStatus as any);
         setEditPriority(currentPriority as any);
+        setEditDueDate(currentDueDate || '');
     };
 
     const saveEdit = (taskId: number) => {
-        onUpdateTask(taskId, editName, editStatus, editPriority);
+        onUpdateTask(taskId, editName, editStatus, editPriority, editDueDate || null);
         setEditingTaskId(null);
     };
 
@@ -77,6 +97,11 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                         <option value="medium">Средний</option>
                         <option value="hard">Высокий</option>
                     </select>
+                    <input
+                        type="date"
+                        value={newTaskDueDate}
+                        onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    />
                     <button onClick={handleCreateTask}>Создать</button>
                     <button onClick={() => setShowInput(false)}>Отмена</button>
                 </div>
@@ -105,7 +130,7 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                 <div
                                     key={`task-${task.id}`}
                                     className={`task-item priority-${task.priority}`}
-                                    onClick={() => handleEditTask(task.id, task.name, task.status, task.priority)}
+                                    onClick={() => handleEditTask(task.id, task.name, task.status, task.priority, task.dueDate)}
                                 >
                                     {editingTaskId === task.id ? (
                                         <div className="task-edit" onClick={(e) => e.stopPropagation()}>
@@ -135,6 +160,12 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                                 <option value="medium">Средний</option>
                                                 <option value="hard">Высокий</option>
                                             </select>
+                                            <input
+                                                type="date"
+                                                value={editDueDate}
+                                                onChange={(e) => setEditDueDate(e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -162,6 +193,12 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                                 </span>
                                             </div>
                                             <div className="task-name">{task.name}</div>
+                                            {task.dueDate && (
+                                                <div className={`task-due-date ${isUrgent(task.dueDate) ? 'urgent' : ''}`}>
+                                                    📅 {formatDate(task.dueDate)}
+                                                    {isUrgent(task.dueDate) && ' ⚠️'}
+                                                </div>
+                                            )}
                                             <div className="task-footer">
                                                 <button
                                                     className="task-delete-btn"

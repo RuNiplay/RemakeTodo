@@ -95,6 +95,7 @@ export interface TaskDTO {
     name: string;
     priority: 'easy' | 'medium' | 'hard';
     status: 'backlog' | 'in_progress' | 'review' | 'done';
+    dueDate?: string | null;
     comments?: CommentDTO[];
     subtasks?: SubtaskDTO[];
 }
@@ -118,6 +119,7 @@ export interface CreateTaskRequest {
     priority: 'easy' | 'medium' | 'hard';
     status: 'backlog' | 'in_progress' | 'review' | 'done';
     board_id: number;
+    dueDate?: string | null;
 }
 
 export interface UpdateTaskRequest {
@@ -125,6 +127,7 @@ export interface UpdateTaskRequest {
     name?: string;
     priority?: 'easy' | 'medium' | 'hard';
     status?: 'backlog' | 'in_progress' | 'review' | 'done';
+    dueDate?: string | null;
 }
 
 export interface CommentDTO {
@@ -189,13 +192,15 @@ export interface TasksProps {
         boardId: number,
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
-        priority: 'easy' | 'medium' | 'hard'
+        priority: 'easy' | 'medium' | 'hard',
+        dueDate?: string | null
     ) => void;
     onUpdateTask: (
         taskId: number,
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
-        priority: 'easy' | 'medium' | 'hard'
+        priority: 'easy' | 'medium' | 'hard',
+        dueDate?: string | null
     ) => void;
     onDeleteTask: (taskId: number) => void;
 }
@@ -203,4 +208,11 @@ export interface TasksProps {
 export interface ApiError {
     message?: string;
     status?: number;
+}
+
+export interface UserProfile {
+    username: string;
+    firstname: string;
+    lastname: string;
+    email: string;
 }
