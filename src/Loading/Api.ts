@@ -129,21 +129,21 @@ export const tasksApi = {
         return json.data || json;
     },
 
-update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string): Promise<TaskDTO> => {
-    const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
-        method: 'PATCH',
-        headers: getHeaders(token),
-        body: JSON.stringify(data), 
-    });
+    update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string): Promise<TaskDTO> => {
+        const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
+            method: 'PATCH',
+            headers: getHeaders(token),
+            body: JSON.stringify(data),
+        });
 
-    if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || 'Ошибка обновления задачи');
-    }
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error(text || 'Ошибка обновления задачи');
+        }
 
-    const json = await res.json();
-    return json.data || json;
-},
+        const json = await res.json();
+        return json.data || json;
+    },
 
     delete: async (taskId: number, token: string): Promise<void> => {
         const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
@@ -160,7 +160,7 @@ update: async (taskId: number, data: Partial<CreateTaskRequest>, token: string):
 
 export const commentsApi = {
     getByTask: async (taskId: number, token: string): Promise<CommentDTO[]> => {
-        const res = await fetch(`${API_BASE_URL}/comments?task_id=${taskId}`, {
+        const res = await fetch(`${API_BASE_URL}/tasks/${taskId}/comments`, {
             headers: getHeaders(token),
         });
 
@@ -174,10 +174,10 @@ export const commentsApi = {
     },
 
     create: async (data: CreateCommentRequest, token: string): Promise<CommentDTO> => {
-        const res = await fetch(`${API_BASE_URL}/comments`, {
+        const res = await fetch(`${API_BASE_URL}/tasks/${data.task_id}/comments`, {
             method: 'POST',
             headers: getHeaders(token),
-            body: JSON.stringify(data),
+            body: JSON.stringify({ message: data.content }),
         });
 
         if (!res.ok) {
@@ -193,7 +193,7 @@ export const commentsApi = {
         const res = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
             method: 'PATCH',
             headers: getHeaders(token),
-            body: JSON.stringify(data),
+            body: JSON.stringify({ message: data.content }),
         });
 
         if (!res.ok) {
@@ -220,24 +220,27 @@ export const commentsApi = {
 
 export const subtasksApi = {
     getByTask: async (taskId: number, token: string): Promise<SubtaskDTO[]> => {
-        const res = await fetch(`${API_BASE_URL}/subtasks?task_id=${taskId}`, {
+        const res = await fetch(`${API_BASE_URL}/tasks/${taskId}`, {
             headers: getHeaders(token),
         });
 
         if (!res.ok) {
             const text = await res.text();
-            throw new Error(text || 'Ошибка загрузки подзадач');
+            throw new Error(text || 'Ошибка загрузки задачи');
         }
 
         const json = await res.json();
-        return json.data || [];
+        return json.data?.subtasks || [];
     },
 
     create: async (data: CreateSubtaskRequest, token: string): Promise<SubtaskDTO> => {
-        const res = await fetch(`${API_BASE_URL}/subtasks`, {
+        const res = await fetch(`${API_BASE_URL}/tasks/${data.task_id}/subtasks`, {
             method: 'POST',
             headers: getHeaders(token),
-            body: JSON.stringify(data),
+            body: JSON.stringify({ 
+                name: data.name, 
+                completed: false 
+            }),
         });
 
         if (!res.ok) {
@@ -249,7 +252,7 @@ export const subtasksApi = {
         return json.data || json;
     },
 
-    update: async (subtaskId: number, data: Partial<CreateSubtaskRequest>, token: string): Promise<SubtaskDTO> => {
+    update: async (subtaskId: number, data: { name?: string; completed?: boolean }, token: string): Promise<SubtaskDTO> => {
         const res = await fetch(`${API_BASE_URL}/subtasks/${subtaskId}`, {
             method: 'PATCH',
             headers: getHeaders(token),

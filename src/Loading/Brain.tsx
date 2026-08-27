@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { foldersApi, boardsApi, tasksApi } from './Api';
+import { foldersApi, boardsApi, tasksApi, subtasksApi } from './Api';
 import Folders from '../MainComponents/Folders';
 import Tasks from '../MainComponents/Task';
-import type { FolderDTO, BoardDTO, TaskDTO } from '../type';
+import type { FolderDTO, BoardDTO, TaskDTO, SubtaskDTO } from '../type';
 import './Brain.css';
 
 function Brain() {
@@ -17,7 +17,7 @@ function Brain() {
     const [tasksByBoard, setTasksByBoard] = useState<Record<number, TaskDTO[]>>({});
     const [loadingTasks, setLoadingTasks] = useState<Record<number, boolean>>({});
     
-    const [activeTab, setActiveTab] = useState<'tasks' | 'overview'>('tasks');
+    const [activeTab, setActiveTab] = useState<'tasks' | 'overview' | 'subtasks'>('tasks');
     
     const [loadingFolders, setLoadingFolders] = useState(true);
     const [error, setError] = useState('');
@@ -29,6 +29,12 @@ function Brain() {
     const [editPassword, setEditPassword] = useState('');
     const [profileMessage, setProfileMessage] = useState('');
     const menuRef = useRef<HTMLDivElement>(null);
+
+    // Subtasks state
+    const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+    const [selectedTaskName, setSelectedTaskName] = useState<string>('');
+    const [subtasksByTask, setSubtasksByTask] = useState<Record<number, SubtaskDTO[]>>({});
+    const [loadingSubtasks, setLoadingSubtasks] = useState<Record<number, boolean>>({});
 
     const token = localStorage.getItem('token') || '';
     const username = localStorage.getItem('username') || 'Не указан';
@@ -137,6 +143,8 @@ function Brain() {
         setSelectedBoardId(boardId);
         setSelectedBoardName(boardName);
         setSelectedFolderName(folderName);
+        setActiveTab('tasks');
+        setSelectedTaskId(null);
     };
 
     const handleCreateTask = async (
@@ -144,12 +152,13 @@ function Brain() {
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard',
-        dueDate?: string | null
+        dueDate?: string | null,
+        description?: string | null 
     ) => {
         console.log('Создаём задачу с дедлайном:', dueDate);
         try {
             await tasksApi.create(
-                { name, description: ' ', priority, status, board_id: boardId, dueDate },
+                { name, description: description || ' ', priority, status, board_id: boardId, dueDate },
                 token
             );
             const updatedTasks = await tasksApi.getByBoard(boardId, token);
@@ -164,11 +173,18 @@ function Brain() {
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard',
-        dueDate?: string | null
+        dueDate?: string | null,
+        description?: string | null
     ) => {
-        console.log('handleUpdateTask вызвана', { taskId, name, status, priority, dueDate });
+        console.log('handleUpdateTask вызвана', { taskId, name, status, priority, dueDate, description });
         try {
-            const result = await tasksApi.update(taskId, { name, status, priority, dueDate }, token);
+            const result = await tasksApi.update(taskId, { 
+                name, 
+                status, 
+                priority, 
+                dueDate,
+                description: description || ' '
+            }, token);
             console.log('Результат update:', result);
             if (selectedBoardId) {
                 const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
@@ -189,6 +205,65 @@ function Brain() {
             }
         } catch (err) {
             console.error('Ошибка удаления задачи:', err);
+        }
+    };
+
+    // Subtasks functions
+    const loadSubtasks = async (taskId: number) => {
+        if (subtasksByTask[taskId]) return;
+        setLoadingSubtasks(prev => ({ ...prev, [taskId]: true }));
+        try {
+            const subtasks = await subtasksApi.getByTask(taskId, token);
+            setSubtasksByTask(prev => ({ ...prev, [taskId]: subtasks }));
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingSubtasks(prev => ({ ...prev, [taskId]: false }));
+        }
+    };
+
+    const handleTaskClick = (taskId: number, taskName: string) => {
+        if (selectedTaskId === taskId) {
+            setSelectedTaskId(null);
+            setSelectedTaskName('');
+            return;
+        }
+        setSelectedTaskId(taskId);
+        setSelectedTaskName(taskName);
+        loadSubtasks(taskId);
+    };
+
+    const handleCreateSubtask = async (taskId: number, name: string) => {
+        try {
+            await subtasksApi.create({ name, task_id: taskId }, token);
+            const updated = await subtasksApi.getByTask(taskId, token);
+            setSubtasksByTask(prev => ({ ...prev, [taskId]: updated }));
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleUpdateSubtask = async (subtaskId: number, data: { name?: string; completed?: boolean }) => {
+        try {
+            await subtasksApi.update(subtaskId, data, token);
+            if (selectedTaskId) {
+                const updated = await subtasksApi.getByTask(selectedTaskId, token);
+                setSubtasksByTask(prev => ({ ...prev, [selectedTaskId]: updated }));
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleDeleteSubtask = async (subtaskId: number) => {
+        try {
+            await subtasksApi.delete(subtaskId, token);
+            if (selectedTaskId) {
+                const updated = await subtasksApi.getByTask(selectedTaskId, token);
+                setSubtasksByTask(prev => ({ ...prev, [selectedTaskId]: updated }));
+            }
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -345,6 +420,12 @@ function Brain() {
                             >
                                 Обзор
                             </button>
+                            <button 
+                                className={`tab-btn ${activeTab === 'subtasks' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('subtasks')}
+                            >
+                                Подзадачи
+                            </button>
                         </div>
 
                         {activeTab === 'tasks' && (
@@ -424,6 +505,96 @@ function Brain() {
                                     </div>
                                 </div>
                             </>
+                        )}
+
+                        {activeTab === 'subtasks' && (
+                            <div className="subtasks-container">
+                                <div className="task-selector">
+                                    <h3>Выберите задачу</h3>
+                                    <div className="task-list-mini">
+                                        {(tasksByBoard[selectedBoardId] || []).length === 0 ? (
+                                            <div className="empty-tasks-mini">Нет задач</div>
+                                        ) : (
+                                            (tasksByBoard[selectedBoardId] || []).map(task => (
+                                                <div 
+                                                    key={task.id}
+                                                    className={`task-mini-item ${selectedTaskId === task.id ? 'active' : ''}`}
+                                                    onClick={() => handleTaskClick(task.id, task.name)}
+                                                >
+                                                    <span className="task-mini-name">{task.name}</span>
+                                                    <span className="task-mini-status">{task.status}</span>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+
+                                {selectedTaskId ? (
+                                    <div className="subtasks-board">
+                                        <div className="subtasks-header">
+                                            <h3>Подзадачи: {selectedTaskName}</h3>
+                                            <div className="subtasks-add">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Название подзадачи"
+                                                    id="newSubtaskInput"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            const input = e.target as HTMLInputElement;
+                                                            if (input.value.trim()) {
+                                                                handleCreateSubtask(selectedTaskId, input.value);
+                                                                input.value = '';
+                                                            }
+                                                        }
+                                                    }}
+                                                />
+                                                <button 
+                                                    onClick={() => {
+                                                        const input = document.getElementById('newSubtaskInput') as HTMLInputElement;
+                                                        if (input?.value.trim()) {
+                                                            handleCreateSubtask(selectedTaskId, input.value);
+                                                            input.value = '';
+                                                        }
+                                                    }}
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {loadingSubtasks[selectedTaskId] ? (
+                                            <div className="subtasks-loading">Загрузка...</div>
+                                        ) : (
+                                            <div className="subtasks-list">
+                                                {(subtasksByTask[selectedTaskId] || []).length === 0 ? (
+                                                    <div className="empty-subtasks">Нет подзадач</div>
+                                                ) : (
+                                                    (subtasksByTask[selectedTaskId] || []).map(subtask => (
+                                                        <div key={subtask.id} className={`subtask-item ${subtask.completed ? 'completed' : ''}`}>
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={subtask.completed}
+                                                                onChange={() => handleUpdateSubtask(subtask.id, { completed: !subtask.completed })}
+                                                            />
+                                                            <span className="subtask-name">{subtask.name}</span>
+                                                            <button 
+                                                                className="subtask-delete"
+                                                                onClick={() => handleDeleteSubtask(subtask.id)}
+                                                            >
+                                                                🗑
+                                                            </button>
+                                                        </div>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="subtasks-empty-state">
+                                        <p>Выберите задачу слева, чтобы увидеть её подзадачи</p>
+                                    </div>
+                                )}
+                            </div>
                         )}
                     </div>
                 ) : (

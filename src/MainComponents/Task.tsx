@@ -8,12 +8,14 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
     const [newTaskStatus, setNewTaskStatus] = useState<'backlog' | 'in_progress' | 'review' | 'done'>('backlog');
     const [newTaskPriority, setNewTaskPriority] = useState<'easy' | 'medium' | 'hard'>('medium');
     const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
+    const [newTaskDescription, setNewTaskDescription] = useState<string>('');
 
     const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
     const [editName, setEditName] = useState<string>('');
     const [editStatus, setEditStatus] = useState<'backlog' | 'in_progress' | 'review' | 'done'>('backlog');
     const [editPriority, setEditPriority] = useState<'easy' | 'medium' | 'hard'>('medium');
     const [editDueDate, setEditDueDate] = useState<string>('');
+    const [editDescription, setEditDescription] = useState<string>('');
 
     const groupedTasks = {
         backlog: tasks.filter(t => t.status === 'backlog'),
@@ -52,24 +54,26 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
 
     const handleCreateTask = () => {
         if (!newTaskName.trim()) return;
-        onCreateTask(boardId, newTaskName, newTaskStatus, newTaskPriority, newTaskDueDate || null);
+        onCreateTask(boardId, newTaskName, newTaskStatus, newTaskPriority, newTaskDueDate || null, newTaskDescription || null);
         setNewTaskName('');
         setNewTaskStatus('backlog');
         setNewTaskPriority('medium');
         setNewTaskDueDate('');
+        setNewTaskDescription('');
         setShowInput(false);
     };
 
-    const handleEditTask = (taskId: number, currentName: string, currentStatus: string, currentPriority: string, currentDueDate?: string | null) => {
+    const handleEditTask = (taskId: number, currentName: string, currentStatus: string, currentPriority: string, currentDueDate?: string | null, currentDescription?: string | null) => {
         setEditingTaskId(taskId);
         setEditName(currentName);
         setEditStatus(currentStatus as any);
         setEditPriority(currentPriority as any);
         setEditDueDate(currentDueDate || '');
+        setEditDescription(currentDescription || '');
     };
 
     const saveEdit = (taskId: number) => {
-        onUpdateTask(taskId, editName, editStatus, editPriority, editDueDate || null);
+        onUpdateTask(taskId, editName, editStatus, editPriority, editDueDate || null, editDescription || null);
         setEditingTaskId(null);
     };
 
@@ -102,6 +106,12 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                         value={newTaskDueDate}
                         onChange={(e) => setNewTaskDueDate(e.target.value)}
                     />
+                    <textarea
+                        value={newTaskDescription}
+                        onChange={(e) => setNewTaskDescription(e.target.value)}
+                        placeholder="Описание задачи"
+                        rows={2}
+                    />
                     <button onClick={handleCreateTask}>Создать</button>
                     <button onClick={() => setShowInput(false)}>Отмена</button>
                 </div>
@@ -130,7 +140,7 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                 <div
                                     key={`task-${task.id}`}
                                     className={`task-item priority-${task.priority}`}
-                                    onClick={() => handleEditTask(task.id, task.name, task.status, task.priority, task.dueDate)}
+                                    onClick={() => handleEditTask(task.id, task.name, task.status, task.priority, task.dueDate, task.description)}
                                 >
                                     {editingTaskId === task.id ? (
                                         <div className="task-edit" onClick={(e) => e.stopPropagation()}>
@@ -166,6 +176,13 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                                 onChange={(e) => setEditDueDate(e.target.value)}
                                                 onClick={(e) => e.stopPropagation()}
                                             />
+                                            <textarea
+                                                value={editDescription}
+                                                onChange={(e) => setEditDescription(e.target.value)}
+                                                placeholder="Описание задачи"
+                                                rows={2}
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -193,6 +210,9 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
                                                 </span>
                                             </div>
                                             <div className="task-name">{task.name}</div>
+                                            {task.description && (
+                                                <div className="task-description">{task.description}</div>
+                                            )}
                                             {task.dueDate && (
                                                 <div className={`task-due-date ${isUrgent(task.dueDate) ? 'urgent' : ''}`}>
                                                     📅 {formatDate(task.dueDate)}

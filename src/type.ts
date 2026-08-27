@@ -193,14 +193,16 @@ export interface TasksProps {
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard',
-        dueDate?: string | null
+        dueDate?: string | null,
+        description?: string | null
     ) => void;
     onUpdateTask: (
         taskId: number,
         name: string,
         status: 'backlog' | 'in_progress' | 'review' | 'done',
         priority: 'easy' | 'medium' | 'hard',
-        dueDate?: string | null
+        dueDate?: string | null,
+        description?: string | null
     ) => void;
     onDeleteTask: (taskId: number) => void;
 }
