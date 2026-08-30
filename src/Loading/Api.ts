@@ -1,6 +1,6 @@
-import type { 
-    GetAllFoldersResponse, 
-    CreateFolderRequest, 
+import type {
+    GetAllFoldersResponse,
+    CreateFolderRequest,
     FolderDTO,
     BoardDTO,
     CreateBoardRequest,
@@ -177,7 +177,7 @@ export const commentsApi = {
         const res = await fetch(`${API_BASE_URL}/tasks/${data.task_id}/comments`, {
             method: 'POST',
             headers: getHeaders(token),
-            body: JSON.stringify({ message: data.content }),
+            body: JSON.stringify({ Message: data.message }),
         });
 
         if (!res.ok) {
@@ -189,11 +189,11 @@ export const commentsApi = {
         return json.data || json;
     },
 
-    update: async (commentId: number, data: { content: string }, token: string): Promise<CommentDTO> => {
+    update: async (commentId: number, data: { message: string }, token: string): Promise<CommentDTO> => {
         const res = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
             method: 'PATCH',
             headers: getHeaders(token),
-            body: JSON.stringify({ message: data.content }),
+            body: JSON.stringify({ message: data.message }),
         });
 
         if (!res.ok) {
@@ -237,9 +237,9 @@ export const subtasksApi = {
         const res = await fetch(`${API_BASE_URL}/tasks/${data.task_id}/subtasks`, {
             method: 'POST',
             headers: getHeaders(token),
-            body: JSON.stringify({ 
-                name: data.name, 
-                completed: false 
+            body: JSON.stringify({
+                name: data.name,
+                completed: false
             }),
         });
 

@@ -132,19 +132,19 @@ export interface UpdateTaskRequest {
 
 export interface CommentDTO {
     id: number;
-    content: string;
-    created_at: string;
-    user_id: number;
-    task_id: number;
+    Message: string;        
+    author_id: number;
+    TaskID: number;        
+    created_at?: string;
 }
 
 export interface CreateCommentRequest {
-    content: string;
+    message: string;
     task_id: number;
 }
 
 export interface UpdateCommentRequest {
-    content: string;
+    message: string;
 }
 
 export interface SubtaskDTO {

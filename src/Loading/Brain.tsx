@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { foldersApi, boardsApi, tasksApi, subtasksApi } from './Api';
 import Folders from '../MainComponents/Folders';
 import Tasks from '../MainComponents/Task';
+import Discussions from '../MainComponents/Discussions';
 import type { FolderDTO, BoardDTO, TaskDTO, SubtaskDTO } from '../type';
 import './Brain.css';
 
@@ -17,7 +18,7 @@ function Brain() {
     const [tasksByBoard, setTasksByBoard] = useState<Record<number, TaskDTO[]>>({});
     const [loadingTasks, setLoadingTasks] = useState<Record<number, boolean>>({});
     
-    const [activeTab, setActiveTab] = useState<'tasks' | 'overview' | 'subtasks'>('tasks');
+    const [activeTab, setActiveTab] = useState<'tasks' | 'overview' | 'subtasks' | 'discussions'>('tasks');
     
     const [loadingFolders, setLoadingFolders] = useState(true);
     const [error, setError] = useState('');
@@ -30,7 +31,6 @@ function Brain() {
     const [profileMessage, setProfileMessage] = useState('');
     const menuRef = useRef<HTMLDivElement>(null);
 
-    // Subtasks state
     const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
     const [selectedTaskName, setSelectedTaskName] = useState<string>('');
     const [subtasksByTask, setSubtasksByTask] = useState<Record<number, SubtaskDTO[]>>({});
@@ -85,6 +85,28 @@ function Brain() {
         return tasksByBoard[selectedBoardId!]?.filter(t => t.status === status).length || 0;
     };
 
+    const loadTasksWithDetails = async (boardId: number): Promise<TaskDTO[]> => {
+        const tasksList = await tasksApi.getByBoard(boardId, token);
+        
+        const tasksWithDetails = await Promise.all(
+            tasksList.map(async (task) => {
+                try {
+                    const detailed = await tasksApi.getById(task.id, token);
+                    return {
+                        ...task,
+                        dueDate: detailed.dueDate || null,
+                        comments: detailed.comments || [],
+                        subtasks: detailed.subtasks || [],
+                    };
+                } catch {
+                    return task;
+                }
+            })
+        );
+        
+        return tasksWithDetails;
+    };
+
     const handleFolderClick = async (folderId: number) => {
         if (expandedFolderId === folderId) {
             setExpandedFolderId(null);
@@ -129,17 +151,19 @@ function Brain() {
             setSelectedFolderName('');
             return;
         }
+
         if (!tasksByBoard[boardId]) {
             setLoadingTasks(prev => ({ ...prev, [boardId]: true }));
             try {
-                const tasks = await tasksApi.getByBoard(boardId, token);
-                setTasksByBoard(prev => ({ ...prev, [boardId]: tasks }));
+                const tasksWithDetails = await loadTasksWithDetails(boardId);
+                setTasksByBoard(prev => ({ ...prev, [boardId]: tasksWithDetails }));
             } catch (err) {
                 console.error(err);
             } finally {
                 setLoadingTasks(prev => ({ ...prev, [boardId]: false }));
             }
         }
+
         setSelectedBoardId(boardId);
         setSelectedBoardName(boardName);
         setSelectedFolderName(folderName);
@@ -161,8 +185,8 @@ function Brain() {
                 { name, description: description || ' ', priority, status, board_id: boardId, dueDate },
                 token
             );
-            const updatedTasks = await tasksApi.getByBoard(boardId, token);
-            setTasksByBoard(prev => ({ ...prev, [boardId]: updatedTasks }));
+            const tasksWithDetails = await loadTasksWithDetails(boardId);
+            setTasksByBoard(prev => ({ ...prev, [boardId]: tasksWithDetails }));
         } catch (err) {
             console.error(err);
         }
@@ -178,17 +202,17 @@ function Brain() {
     ) => {
         console.log('handleUpdateTask вызвана', { taskId, name, status, priority, dueDate, description });
         try {
-            const result = await tasksApi.update(taskId, { 
+            await tasksApi.update(taskId, { 
                 name, 
                 status, 
                 priority, 
                 dueDate,
                 description: description || ' '
             }, token);
-            console.log('Результат update:', result);
+
             if (selectedBoardId) {
-                const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
-                setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: updatedTasks }));
+                const tasksWithDetails = await loadTasksWithDetails(selectedBoardId);
+                setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: tasksWithDetails }));
             }
         } catch (err) {
             console.error('Ошибка обновления задачи:', err);
@@ -200,15 +224,14 @@ function Brain() {
         try {
             await tasksApi.delete(taskId, token);
             if (selectedBoardId) {
-                const updatedTasks = await tasksApi.getByBoard(selectedBoardId, token);
-                setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: updatedTasks }));
+                const tasksWithDetails = await loadTasksWithDetails(selectedBoardId);
+                setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: tasksWithDetails }));
             }
         } catch (err) {
             console.error('Ошибка удаления задачи:', err);
         }
     };
 
-    // Subtasks functions
     const loadSubtasks = async (taskId: number) => {
         if (subtasksByTask[taskId]) return;
         setLoadingSubtasks(prev => ({ ...prev, [taskId]: true }));
@@ -245,13 +268,24 @@ function Brain() {
 
     const handleUpdateSubtask = async (subtaskId: number, data: { name?: string; completed?: boolean }) => {
         try {
-            await subtasksApi.update(subtaskId, data, token);
+            // Если меняем только completed — добавляем текущее имя
+            let updateData = { ...data };
+            
+            if (data.completed !== undefined && !data.name) {
+                const currentSubtasks = subtasksByTask[selectedTaskId!] || [];
+                const subtask = currentSubtasks.find(s => s.id === subtaskId);
+                if (subtask) {
+                    updateData = { ...data, name: subtask.name };
+                }
+            }
+            
+            await subtasksApi.update(subtaskId, updateData, token);
             if (selectedTaskId) {
                 const updated = await subtasksApi.getByTask(selectedTaskId, token);
                 setSubtasksByTask(prev => ({ ...prev, [selectedTaskId]: updated }));
             }
         } catch (err) {
-            console.error(err);
+            console.error('Ошибка обновления подзадачи:', err);
         }
     };
 
@@ -426,6 +460,12 @@ function Brain() {
                             >
                                 Подзадачи
                             </button>
+                            <button 
+                                className={`tab-btn ${activeTab === 'discussions' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('discussions')}
+                            >
+                                Обсуждения
+                            </button>
                         </div>
 
                         {activeTab === 'tasks' && (
@@ -595,6 +635,13 @@ function Brain() {
                                     </div>
                                 )}
                             </div>
+                        )}
+
+                        {activeTab === 'discussions' && (
+                            <Discussions
+                                tasks={tasksByBoard[selectedBoardId] || []}
+                                token={token}
+                            />
                         )}
                     </div>
                 ) : (
