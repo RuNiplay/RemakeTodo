@@ -22,6 +22,7 @@ function Brain() {
     
     const [loadingFolders, setLoadingFolders] = useState(true);
     const [error, setError] = useState('');
+    const [actionError, setActionError] = useState<string | null>(null);
     
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -41,6 +42,13 @@ function Brain() {
     const firstname = localStorage.getItem('firstname') || '';
     const lastname = localStorage.getItem('lastname') || '';
     const displayName = firstname || lastname || username;
+
+    useEffect(() => {
+        if (actionError) {
+            const timer = setTimeout(() => setActionError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [actionError]);
 
     useEffect(() => {
         const fetchFolders = async () => {
@@ -121,7 +129,7 @@ function Brain() {
                 const boards = await boardsApi.getByFolder(folderId, token);
                 setBoardsByFolder(prev => ({ ...prev, [folderId]: boards }));
             } catch (err) {
-                console.error(err);
+                setActionError('Не удалось загрузить доски');
             } finally {
                 setLoadingBoards(prev => ({ ...prev, [folderId]: false }));
             }
@@ -140,7 +148,7 @@ function Brain() {
                 [folderId]: [...(prev[folderId] || []), newBoard]
             }));
         } catch (err) {
-            console.error(err);
+            setActionError('Не удалось создать доску');
         }
     };
 
@@ -158,7 +166,7 @@ function Brain() {
                 const tasksWithDetails = await loadTasksWithDetails(boardId);
                 setTasksByBoard(prev => ({ ...prev, [boardId]: tasksWithDetails }));
             } catch (err) {
-                console.error(err);
+                setActionError('Не удалось загрузить задачи');
             } finally {
                 setLoadingTasks(prev => ({ ...prev, [boardId]: false }));
             }
@@ -179,7 +187,6 @@ function Brain() {
         dueDate?: string | null,
         description?: string | null 
     ) => {
-        console.log('Создаём задачу с дедлайном:', dueDate);
         try {
             await tasksApi.create(
                 { name, description: description || ' ', priority, status, board_id: boardId, dueDate },
@@ -188,7 +195,7 @@ function Brain() {
             const tasksWithDetails = await loadTasksWithDetails(boardId);
             setTasksByBoard(prev => ({ ...prev, [boardId]: tasksWithDetails }));
         } catch (err) {
-            console.error(err);
+            setActionError('Не удалось создать задачу');
         }
     };
 
@@ -200,7 +207,6 @@ function Brain() {
         dueDate?: string | null,
         description?: string | null
     ) => {
-        console.log('handleUpdateTask вызвана', { taskId, name, status, priority, dueDate, description });
         try {
             await tasksApi.update(taskId, { 
                 name, 
@@ -215,12 +221,11 @@ function Brain() {
                 setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: tasksWithDetails }));
             }
         } catch (err) {
-            console.error('Ошибка обновления задачи:', err);
+            setActionError('Не удалось обновить задачу');
         }
     };
 
     const handleDeleteTask = async (taskId: number) => {
-        console.log('Удаление задачи:', taskId);
         try {
             await tasksApi.delete(taskId, token);
             if (selectedBoardId) {
@@ -228,7 +233,7 @@ function Brain() {
                 setTasksByBoard(prev => ({ ...prev, [selectedBoardId]: tasksWithDetails }));
             }
         } catch (err) {
-            console.error('Ошибка удаления задачи:', err);
+            setActionError('Не удалось удалить задачу');
         }
     };
 
@@ -239,7 +244,7 @@ function Brain() {
             const subtasks = await subtasksApi.getByTask(taskId, token);
             setSubtasksByTask(prev => ({ ...prev, [taskId]: subtasks }));
         } catch (err) {
-            console.error(err);
+            setActionError('Не удалось загрузить подзадачи');
         } finally {
             setLoadingSubtasks(prev => ({ ...prev, [taskId]: false }));
         }
@@ -262,13 +267,12 @@ function Brain() {
             const updated = await subtasksApi.getByTask(taskId, token);
             setSubtasksByTask(prev => ({ ...prev, [taskId]: updated }));
         } catch (err) {
-            console.error(err);
+            setActionError('Не удалось создать подзадачу');
         }
     };
 
     const handleUpdateSubtask = async (subtaskId: number, data: { name?: string; completed?: boolean }) => {
         try {
-            // Если меняем только completed — добавляем текущее имя
             let updateData = { ...data };
             
             if (data.completed !== undefined && !data.name) {
@@ -285,7 +289,7 @@ function Brain() {
                 setSubtasksByTask(prev => ({ ...prev, [selectedTaskId]: updated }));
             }
         } catch (err) {
-            console.error('Ошибка обновления подзадачи:', err);
+            setActionError('Не удалось обновить подзадачу');
         }
     };
 
@@ -297,7 +301,7 @@ function Brain() {
                 setSubtasksByTask(prev => ({ ...prev, [selectedTaskId]: updated }));
             }
         } catch (err) {
-            console.error(err);
+            setActionError('Не удалось удалить подзадачу');
         }
     };
 
@@ -336,6 +340,14 @@ function Brain() {
 
     return (
         <div className="brain-container">
+            {/* Глобальное уведомление об ошибке */}
+            {actionError && (
+                <div className="brain-toast-error">
+                    ⚠️ {actionError}
+                    <button onClick={() => setActionError(null)}>×</button>
+                </div>
+            )}
+
             <div className="brain-sidebar">
                 <div className="avatar-container">
                     <div className="avatar-wrapper" onClick={() => setIsProfileOpen(!isProfileOpen)}>

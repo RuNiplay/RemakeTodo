@@ -45,11 +45,9 @@ function Discussions({ tasks, token }: DiscussionsProps) {
             setError('');
             try {
                 const data = await commentsApi.getByTask(selectedTaskId, token);
-                console.log('Комментарии от бэкенда:', data);
                 setComments(data);
             } catch (err) {
                 setError('Не удалось загрузить обсуждения');
-                console.error(err);
             } finally {
                 setLoading(false);
             }
@@ -77,9 +75,7 @@ function Discussions({ tasks, token }: DiscussionsProps) {
                 token
             );
 
-            // Проверяем, что комментарий создался
             if (!created || !created.id) {
-                console.error('Ошибка: комментарий не создан', created);
                 setError('Не удалось создать комментарий');
                 return;
             }
@@ -93,7 +89,6 @@ function Discussions({ tasks, token }: DiscussionsProps) {
             setNewComment('');
         } catch (err) {
             setError('Не удалось отправить комментарий');
-            console.error(err);
         }
     };
 
@@ -105,7 +100,6 @@ function Discussions({ tasks, token }: DiscussionsProps) {
             setComments(prev => prev.filter(c => c.id !== commentId));
         } catch (err) {
             setError('Не удалось удалить комментарий');
-            console.error(err);
         }
     };
 
@@ -161,8 +155,8 @@ function Discussions({ tasks, token }: DiscussionsProps) {
                                                 </span>
                                             </div>
                                             <div className="discussions-message-text">
-    {comment.Message || 'Без текста'}
-</div>
+                                                {comment.Message || 'Без текста'}
+                                            </div>
                                         </div>
                                         <button
                                             className="discussions-message-delete"

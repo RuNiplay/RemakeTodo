@@ -17,11 +17,35 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
     const [editDueDate, setEditDueDate] = useState<string>('');
     const [editDescription, setEditDescription] = useState<string>('');
 
+    const [filterPriority, setFilterPriority] = useState<'all' | 'easy' | 'medium' | 'hard'>('all');
+    const [filterSort, setFilterSort] = useState<'none' | 'dueDate' | 'priority'>('none');
+
+    const getFilteredTasks = (status: string) => {
+        let filtered = tasks.filter(t => t.status === status);
+
+        if (filterPriority !== 'all') {
+            filtered = filtered.filter(t => t.priority === filterPriority);
+        }
+
+        if (filterSort === 'dueDate') {
+            filtered = [...filtered].sort((a, b) => {
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            });
+        } else if (filterSort === 'priority') {
+            const priorityOrder = { hard: 0, medium: 1, easy: 2 };
+            filtered = [...filtered].sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+        }
+
+        return filtered;
+    };
+
     const groupedTasks = {
-        backlog: tasks.filter(t => t.status === 'backlog'),
-        in_progress: tasks.filter(t => t.status === 'in_progress'),
-        review: tasks.filter(t => t.status === 'review'),
-        done: tasks.filter(t => t.status === 'done'),
+        backlog: getFilteredTasks('backlog'),
+        in_progress: getFilteredTasks('in_progress'),
+        review: getFilteredTasks('review'),
+        done: getFilteredTasks('done'),
     };
 
     const columnConfig = [
@@ -81,6 +105,46 @@ function Tasks({ tasks, loading, boardId, onCreateTask, onUpdateTask, onDeleteTa
 
     return (
         <div className="tasks-container">
+            {/* Панель фильтров */}
+            <div className="tasks-filters">
+                <div className="filter-group">
+                    <span className="filter-label">Приоритет:</span>
+                    <select 
+                        value={filterPriority} 
+                        onChange={(e) => setFilterPriority(e.target.value as any)}
+                        className="filter-select"
+                    >
+                        <option value="all">Все</option>
+                        <option value="easy">Низкий</option>
+                        <option value="medium">Средний</option>
+                        <option value="hard">Высокий</option>
+                    </select>
+                </div>
+                <div className="filter-group">
+                    <span className="filter-label">Сортировка:</span>
+                    <select 
+                        value={filterSort} 
+                        onChange={(e) => setFilterSort(e.target.value as any)}
+                        className="filter-select"
+                    >
+                        <option value="none">Без сортировки</option>
+                        <option value="dueDate">По дедлайну</option>
+                        <option value="priority">По приоритету</option>
+                    </select>
+                </div>
+                {(filterPriority !== 'all' || filterSort !== 'none') && (
+                    <button 
+                        className="filter-reset-btn"
+                        onClick={() => {
+                            setFilterPriority('all');
+                            setFilterSort('none');
+                        }}
+                    >
+                        Сбросить
+                    </button>
+                )}
+            </div>
+
             {showInput && (
                 <div className="tasks-input-group">
                     <input
